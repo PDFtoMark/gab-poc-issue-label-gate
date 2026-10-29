@@ -1,0 +1,34 @@
+name: Gate Probe
+on:
+  issues:
+    types: [labeled]
+permissions:
+  contents: read
+  issues: read
+jobs:
+  probe:
+    if: |
+      contains(github.event.issue.labels.*.name, 'Autotests') &&
+      contains(github.event.issue.labels.*.name, 'Run TA creation workflow') &&
+      (
+        github.event.issue.issue_type.name == 'Task' ||
+        github.event.issue.type.name == 'Task' ||
+        github.event.issue.issue_type == 'Task' ||
+        github.event.issue.type == 'Task'
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump issue data
+        env:
+          BODY: ${{ github.event.issue.body }}
+          TITLE: ${{ github.event.issue.title }}
+          ACTOR: ${{ github.actor }}
+          TYPENAME: ${{ github.event.issue.type.name }}
+          LABELNAME: ${{ github.event.label.name }}
+        run: |
+          echo "actor=$ACTOR"
+          echo "label_name=$LABELNAME"
+          echo "type_name=$TYPENAME"
+          echo "title=$TITLE"
+          echo "--- body ---"
+          printf '%s\n' "$BODY"
