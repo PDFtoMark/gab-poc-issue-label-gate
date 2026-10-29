@@ -1,0 +1,28 @@
+name: Gate Probe 2
+on:
+  issues:
+    types: [labeled]
+permissions:
+  contents: read
+  issues: read
+jobs:
+  probe:
+    if: contains(github.event.issue.labels.*.name, 'Autotests') && contains(github.event.issue.labels.*.name, 'Run TA creation workflow') && github.event.issue.type.name == 'Task'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump
+        env:
+          BODY: ${{ github.event.issue.body }}
+          TITLE: ${{ github.event.issue.title }}
+          ACTOR: ${{ github.actor }}
+          TYPENAME: ${{ github.event.issue.type.name }}
+          LABELNAME: ${{ github.event.label.name }}
+        run: |
+          echo "actor=$ACTOR"
+          echo "label_name=$LABELNAME"
+          echo "type_name=$TYPENAME"
+          echo "title=$TITLE"
+          echo "=== body ==="
+          printf '%s\n' "$BODY"
+          echo "=== event issue keys ==="
+          python3 -c "import json,os;d=json.load(open(os.environ['GITHUB_EVENT_PATH']));print(json.dumps({k:d['issue'].get(k) for k in ('number','title','body','type')},indent=1))"
